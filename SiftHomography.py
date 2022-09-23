@@ -84,5 +84,5 @@ while cap.isOpened():
             kp2, des2 = sift.detectAndCompute(rgray, None)
 
     if key == ord("q"):
-        break
+        cap.release()
 cv2.destroyAllWindows()
