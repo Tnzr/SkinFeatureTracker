@@ -10,18 +10,7 @@ class Preprocessing:
         self.img = img
 
     def sharpen(self):
-        kernel = np.array([[0, -1, 0],
-                           [-1, 5, -1],
-                           [0, -1, 0]])
-
-        src = cv.imread(self.img)
-        shp = cv.filter2D(src, -1, kernel)
-
-        return shp
+        return cv.filter2D(cv.imread(self.img), -1, np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]]))
 
     def histogram(self):
-        src = cv.imread(self.img)
-        gre = cv.cvtColor(src, cv.COLOR_BGR2GRAY)
-        dst = cv.equalizeHist(gre)
-
-        return dst
+        return cv.equalizeHist(cv.cvtColor(cv.imread(self.img), cv.COLOR_BGR2GRAY))

@@ -4,16 +4,9 @@ from Pipeline import Preprocessing
 
 def main():
     PreProcClass = Preprocessing('9.png')
-
-    HistogramObject = PreProcClass.histogram()
-    cv.imwrite('hist.png', HistogramObject)
-
-    SharpenObject = PreProcClass.sharpen()
-    cv.imwrite('sharp.png', SharpenObject)
-
-    PreProcClass = Preprocessing('hist.png')
-    HistogramSharpen = PreProcClass.sharpen()
-    cv.imwrite('hist_sharp.png', HistogramSharpen)
+    cv.imwrite('hist.png', PreProcClass.histogram())
+    cv.imwrite('sharp.png', PreProcClass.sharpen())
+    cv.imwrite('hist_sharp.png', Preprocessing('hist.png').sharpen())
 
 
 if __name__ == "__main__":
