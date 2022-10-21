@@ -98,8 +98,11 @@ class SemanticSegmentation:
         for category, category_image, mask_image in draw_results(image[0], results[0],
                                                                  categories=self.torch_model.categories):
 
-            cv2.imshow(category, category_image)
-            cv2.imshow(f'mask_{category}', mask_image)
+            if self.display:
+                cv2.imshow(category, category_image)
+                cv2.imshow(f'mask_{category}', mask_image)
+            return {category: category_image,
+                    f'mask_{category}': mask_image}
 
     def test_run(self):
         logging.info(f'evaluating images from {self.img_path}')
@@ -180,7 +183,8 @@ if __name__ == '__main__':
         args.img_path, args.model, args.model_type)
     while cap.isOpened():
         _, frame = cap.read()
-        model.run(scale_image(frame, 40))
+        dict = model.run(scale_image(frame, 40))
+        cv2.imshow('skin', dict['mask_skin'])
         key = cv2.waitKey(1)
 
         if key == ord("q"):
