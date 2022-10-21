@@ -18,7 +18,7 @@ from semantic_segmentation import draw_results
 
 class SemanticSegmentation:
 
-    def __init__(self, threshold=0.5, save=False, display=True, img_path="Pictures",
+    def __init__(self, threshold=0.5, save=False, display=True, cpu=True, img_path="Pictures",
                  model="pretrained/model_segmentation_skin_30.pth", model_type="FCNResNet101"):
         self.threshold = threshold
         self.save = save
@@ -26,10 +26,16 @@ class SemanticSegmentation:
         self.model_type = model_type
         self.model = model
         self.img_path = img_path
+        self.cpu = cpu
 
         logging.basicConfig(level=logging.INFO)
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        if cpu:
+            device = 'cpu'
+        else:
+            if device == 'cpu':
+                logging.error('no gpu found!')
         logging.info(f'running inference on {device}')
 
         logging.info(f'loading {self.model_type} from {self.model}')
@@ -148,40 +154,36 @@ def parse_args():
 
     parser.add_argument('--save', action='store_true', default=False)
     parser.add_argument('--display', action='store_true', default=False)
+    parser.add_argument('--cpu', action='store_true', default=False)
 
     return parser.parse_args()
 
 
-def generate_resolutions(image_path: pathlib.Path):
-    img = cv2.imread(str(image_path))
-    assert img is not None
-    scale_percent = 60  # percent of original size
-    for i in range(5):
-        width = int(img.shape[1] * scale_percent / 100)
-        height = int(img.shape[0] * scale_percent / 100)
-        dim = (width, height)
+def scale_image(img, scale=60):
+    scale_percent = scale  # percent of original size
+    width = int(img.shape[1] * scale_percent / 100)
+    height = int(img.shape[0] * scale_percent / 100)
+    dim = (width, height)
 
-        # resize image
-        resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
+    # resize image
+    resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
-        logging.info(f'Resized Dimensions : {resized.shape}')
-        cv2.imwrite(str(image_path), resized)
+    logging.info(f'Resized Dimensions : {resized.shape}')
+    return resized
 
 
 if __name__ == '__main__':
     cap = cv2.VideoCapture(0)
     args = parse_args()
     model = SemanticSegmentation(
-        args.threshold, args.save, args.display,
+        args.threshold, args.save, args.display, args.cpu,
         args.img_path, args.model, args.model_type)
     while cap.isOpened():
         _, frame = cap.read()
-        model.run(frame)
+        model.run(scale_image(frame, 40))
         key = cv2.waitKey(1)
 
         if key == ord("q"):
             cap.release()
             break
     cv2.destroyAllWindows()
-    #generate_resolutions("Pictures/Portrait.png")
-    # model.run()
