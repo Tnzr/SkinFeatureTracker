@@ -170,6 +170,14 @@ def parse_args():
     return parser.parse_args()
 
 
+def limit(n, low, high):
+    if n < low:
+        return low
+    elif n > high:
+        return high
+    return n
+
+
 if __name__ == '__main__':
     cap = cv2.VideoCapture(0)
     args = parse_args()
@@ -181,17 +189,28 @@ if __name__ == '__main__':
         args.img_path, args.model, args.model_type, args.verbose)
     t = time.time()
     print(f"Model Initialization took: {t-t0:.2}s")
-    scale = 100
+    scale = 16
+    fps = 0
     while cap.isOpened():
         t0 = time.time()
         _, frame = cap.read()
         segmented_skin = model.run(frame, scale)
+        scale = limit(scale, 5, 100)
+        segmented_skin = cv2.putText(segmented_skin,
+                             f"FPS: {fps:.2f} - Scale: {scale}%.",
+                             (20, 20), cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255, 0, 255), thickness=2,
+                             lineType=cv2.LINE_AA)
         cv2.imshow('frame', frame)
         cv2.imshow('segmented_skin', segmented_skin)
         key = cv2.waitKey(1)
         t = time.time()
-        print(f"FPS: {(t-t0)**-1:.2f} Scale: {scale}")
+        fps = (t-t0)**-1
+        print(f"FPS: {fps:.2f} Scale: {scale}")
         if key == ord("q"):
             cap.release()
             break
+        elif key == ord(","):
+            scale -= 1
+        elif key == ord("."):
+            scale += 1
     cv2.destroyAllWindows()

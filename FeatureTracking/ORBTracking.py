@@ -112,9 +112,9 @@ if __name__ == '__main__':
         elif key == ord("d"):
             position = np.array([0.0, 0.0])
         elif key == ord(","):
-            match_thresh += 0.05
-        elif key == ord("."):
             match_thresh -= 0.05
+        elif key == ord("."):
+            match_thresh += 0.05
 
         cv2.imshow("frame", frame)
         t1 = time.time()
