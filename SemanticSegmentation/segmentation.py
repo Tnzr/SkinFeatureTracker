@@ -1,5 +1,4 @@
 import time
-t0 = time.time()
 import argparse
 import logging
 import pathlib
@@ -8,12 +7,10 @@ import torch
 from torchvision import transforms
 import os
 import numpy as np
+from SemanticSegmentation.semantic_segmentation import models
+from SemanticSegmentation.semantic_segmentation import load_model
+from SemanticSegmentation.semantic_segmentation import draw_results
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-from semantic_segmentation import models
-from semantic_segmentation import load_model
-from semantic_segmentation import draw_results
-
-t = time.time()
 
 
 class SemanticSegmentation:
@@ -181,7 +178,6 @@ def limit(n, low, high):
 if __name__ == '__main__':
     cap = cv2.VideoCapture(0)
     args = parse_args()
-    print(f"Importing Dependencies took {t-t0}s")
     t0 = time.time()
     print("Initializing Model")
     model = SemanticSegmentation(

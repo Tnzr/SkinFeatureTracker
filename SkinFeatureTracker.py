@@ -1,8 +1,9 @@
 import time
 import cv2
 import numpy as np
-
-
+# from SemanticSegmentation import segmentation
+from Preprocessing.UsedPipeline.Pipeline import Preprocessing
+from SemanticSegmentation.segmentation import SemanticSegmentation
 def drawMatchDisplacement(dst, kp1, cl1, kp2, cl2, good, moving_matches=True, mov_thresh=2, pos_log=None):
     cl1 = (0, 0, 255) if cl1 is None else cl1
     cl2 = (255, 0, 0) if cl2 is None else cl2
@@ -48,51 +49,58 @@ def limit(n, low, high):
 
 
 if __name__ == '__main__':
+    print("Initializing...")
     cap = cv2.VideoCapture(0)
+    skin_extractor = SemanticSegmentation(model="SemanticSegmentation/pretrained/model_segmentation_skin_30.pth")
+    texture_enhancer = Preprocessing()
     roi = []
-    sift = cv2.SIFT_create()
+    orb = cv2.ORB_create()
     index_params = dict(algorithm=0, trees=5)
     search_params = dict()
     flann = cv2.FlannBasedMatcher(index_params, search_params)
+    bf = cv2.BFMatcher.create(cv2.NORM_HAMMING, crossCheck=True)
+    cv2.ORB.setMaxFeatures(orb, 1000)
     kp1, des1 = [], None
     kp2, des2 = [], None
-
     prev_frame = None
     moving_only = True
     background = True
     preprocessing = True
     position = np.array([0.0, 0.0])
-    match_thresh = 0.15
+    match_thresh = 0.3
     sharpen = np.array([[0, -1, 0],
-                        [-1, 5, -1],
-                        [0, -1, 0]])
+                       [-1, 5, -1],
+                       [0, -1, 0]])
+    fps = 0
     n_features = 0
+    print("Done")
     while cap.isOpened():
         t0 = time.time()
         ret, frame = cap.read()
-        cv2.imshow("frame", frame)
         h, w, c = frame.shape
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        segmented_skin = skin_extractor.run(frame)
+        gray = cv2.cvtColor(segmented_skin, cv2.COLOR_BGR2GRAY)
         if preprocessing:
-            equalized_hist = cv2.equalizeHist(gray)
-            gray = cv2.filter2D(src=equalized_hist, ddepth=-1, kernel=sharpen)
-        kp1, des1 = sift.detectAndCompute(gray, None)
+            # equalized_hist = cv2.equalizeHist(gray)
+            # gray = cv2.filter2D(src=equalized_hist, ddepth=-1, kernel=sharpen)
+            preprocessed = texture_enhancer.run(gray)
+        kp1, des1 = orb.detectAndCompute(gray, None)
         n_features = len(kp1)
         if len(kp2) != 0:
             ft_dst = np.zeros(frame.shape, dtype="uint8") if background else gray.copy()
-            matches = flann.knnMatch(des1, des2, k=2)
+            matches = bf.match(des1, des2)
             good = []
-            for m, n in matches:
-                if m.distance < limit(match_thresh, 0, 1)*n.distance:
-                    good.append(m)
+            for match in matches:
+                if match.distance < limit(match_thresh, 0, 1)*50:
+                    good.append(match)
 
             ft_dst = drawMatchDisplacement(ft_dst, kp1, (0, 0, 255), kp2, (255, 0, 0), good, moving_only, 2, position)
             center = position+np.array([w/2, h/2])
             cv2.circle(ft_dst, center.astype(int), 2, (255, 0, 0), -1)
             img3 = cv2.drawMatches(frame, kp1, prev_frame, kp2, good, None, flags=2)
 
-            cv2.imshow("frame", gray)
-            ft_dst = cv2.putText(ft_dst, f"FPS: {fps:.2f} - PPP: {preprocessing} - All Features: {not moving_only} - N fts: {n_features}", (20, 20), cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255, 0, 255), thickness=2, lineType=cv2.LINE_AA)
+            cv2.imshow("frame", frame)
+            ft_dst = cv2.putText(ft_dst, f"FPS: {fps:.2f} - PPP: {preprocessing} - All Features: {not moving_only} - N fts: {n_features}", (20, 20), cv2.FONT_HERSHEY_SIMPLEX, fontScale=.6, color=(255, 0, 255), thickness=2, lineType=cv2.LINE_AA)
             cv2.imshow("Feature Displacement", ft_dst)
 
         kp2, des2 = kp1, des1
@@ -111,11 +119,14 @@ if __name__ == '__main__':
         elif key == ord("d"):
             position = np.array([0.0, 0.0])
         elif key == ord(","):
-            match_thresh += 0.05
-        elif key == ord("."):
             match_thresh -= 0.05
+        elif key == ord("."):
+            match_thresh += 0.05
+
+        cv2.imshow("frame", frame)
         t1 = time.time()
         fps = (t1 - t0) ** -1
+
         print(f"FPS: {fps:.2f} Match Thresh: {match_thresh}")
 
     cv2.destroyAllWindows()

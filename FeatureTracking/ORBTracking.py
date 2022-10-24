@@ -2,7 +2,6 @@ import time
 import cv2
 import numpy as np
 
-
 def drawMatchDisplacement(dst, kp1, cl1, kp2, cl2, good, moving_matches=True, mov_thresh=2, pos_log=None):
     cl1 = (0, 0, 255) if cl1 is None else cl1
     cl2 = (255, 0, 0) if cl2 is None else cl2
@@ -48,7 +47,10 @@ def limit(n, low, high):
 
 
 if __name__ == '__main__':
+    print("Initializing...")
     cap = cv2.VideoCapture(0)
+    skin_extractor = SemanticSegmentation()
+    texture_enhancer = Preprocessing()
     roi = []
     orb = cv2.ORB_create()
     index_params = dict(algorithm=0, trees=5)
@@ -69,14 +71,17 @@ if __name__ == '__main__':
                        [0, -1, 0]])
     fps = 0
     n_features = 0
+    print("Done")
     while cap.isOpened():
         t0 = time.time()
         ret, frame = cap.read()
         h, w, c = frame.shape
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        segmented_skin = skin_extractor.run(frame)
+        gray = cv2.cvtColor(segmented_skin, cv2.COLOR_BGR2GRAY)
         if preprocessing:
-            equalized_hist = cv2.equalizeHist(gray)
-            gray = cv2.filter2D(src=equalized_hist, ddepth=-1, kernel=sharpen)
+            # equalized_hist = cv2.equalizeHist(gray)
+            # gray = cv2.filter2D(src=equalized_hist, ddepth=-1, kernel=sharpen)
+            preprocessed = texture_enhancer.run(gray)
         kp1, des1 = orb.detectAndCompute(gray, None)
         n_features = len(kp1)
         if len(kp2) != 0:
