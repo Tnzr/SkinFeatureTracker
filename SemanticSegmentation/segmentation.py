@@ -1,4 +1,5 @@
 import time
+
 t0 = time.time()
 import argparse
 import logging
@@ -8,12 +9,11 @@ import torch
 from torchvision import transforms
 import os
 import numpy as np
+
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 from semantic_segmentation import models
 from semantic_segmentation import load_model
 from semantic_segmentation import draw_results
-
-t = time.time()
 
 
 class SemanticSegmentation:
@@ -80,7 +80,7 @@ class SemanticSegmentation:
 
     @staticmethod
     def scale_image(img, scale=60):
-        scale = np.sqrt(scale/100)
+        scale = np.sqrt(scale / 100)
         width = int(img.shape[1] * scale)
         height = int(img.shape[0] * scale)
         dim = (width, height)
@@ -93,10 +93,10 @@ class SemanticSegmentation:
         oh, ow, _ = image.shape
         img = self.scale_image(image, scale)
         fn_image_transform = transforms.Compose([
-                transforms.Lambda(lambda image_path: self._load_cv2_image(img)),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-            ])
+            transforms.Lambda(lambda image_path: self._load_cv2_image(img)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        ])
         if self.verbose:
             start_time = time.time()
         img = fn_image_transform(img)
@@ -106,7 +106,7 @@ class SemanticSegmentation:
             results = torch.sigmoid(results)
             results = results > self.threshold
         # squeezing to remove batch channel
-        result_mask = results[0].cpu().numpy().squeeze().astype(np.uint8)*255
+        result_mask = results[0].cpu().numpy().squeeze().astype(np.uint8) * 255
         segmenting_mask = cv2.resize(result_mask, (ow, oh))
         mask_image = cv2.bitwise_and(image, image, mask=segmenting_mask)
         if self.verbose:
@@ -167,20 +167,25 @@ def parse_args():
     parser.add_argument('--display', action='store_true', default=False)
     parser.add_argument('--verbose', action='store_true', default=False)
     parser.add_argument('--device', type=int, default=0)
+    parser.add_argument('--cpu', action='store_true', default=False)
+    parser.add_argument('--scale', type=float, default=0.5)
     return parser.parse_args()
 
 
 if __name__ == '__main__':
-    cap = cv2.VideoCapture(0)
     args = parse_args()
-    print(f"Importing Dependencies took {t-t0}s")
-    t0 = time.time()
-    print("Initializing Model")
+    logging.info("Initializing Model")
+    t = time.time()
     model = SemanticSegmentation(
         args.threshold, args.save, args.display, args.device,
         args.img_path, args.model, args.model_type, args.verbose)
-    t = time.time()
-    print(f"Model Initialization took: {t-t0:.2}s")
+
+    logging.info(f"Model Initialization took: {t - time.time():.2}s")
+    if args.save:
+        model.test_run()
+        os.exit()
+
+    cap = cv2.VideoCapture(0)
     scale = 100
     while cap.isOpened():
         t0 = time.time()
@@ -190,7 +195,7 @@ if __name__ == '__main__':
         cv2.imshow('segmented_skin', segmented_skin)
         key = cv2.waitKey(1)
         t = time.time()
-        print(f"FPS: {(t-t0)**-1:.2f} Scale: {scale}")
+        logging.info(f"FPS: {(time.time() - t0) ** -1:.2f} Scale: {scale}")
         if key == ord("q"):
             cap.release()
             break
