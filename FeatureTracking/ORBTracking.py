@@ -2,6 +2,7 @@ import time
 import cv2
 import numpy as np
 
+
 def drawMatchDisplacement(dst, kp1, cl1, kp2, cl2, good, moving_matches=True, mov_thresh=2, pos_log=None):
     cl1 = (0, 0, 255) if cl1 is None else cl1
     cl2 = (255, 0, 0) if cl2 is None else cl2
@@ -46,11 +47,18 @@ def limit(n, low, high):
     return n
 
 
+def feature_matcher(des1, des2, match_thresh):
+    matches = bf.match(des1, des2)
+    good = []
+    for match in matches:
+        if match.distance < limit(match_thresh, 0, 1) * 50:
+            good.append(match)
+    return good
+
+
 if __name__ == '__main__':
     print("Initializing...")
     cap = cv2.VideoCapture(0)
-    skin_extractor = SemanticSegmentation()
-    texture_enhancer = Preprocessing()
     roi = []
     orb = cv2.ORB_create()
     index_params = dict(algorithm=0, trees=5)
@@ -76,27 +84,20 @@ if __name__ == '__main__':
         t0 = time.time()
         ret, frame = cap.read()
         h, w, c = frame.shape
-        segmented_skin = skin_extractor.run(frame)
-        gray = cv2.cvtColor(segmented_skin, cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         if preprocessing:
-            # equalized_hist = cv2.equalizeHist(gray)
-            # gray = cv2.filter2D(src=equalized_hist, ddepth=-1, kernel=sharpen)
-            preprocessed = texture_enhancer.run(gray)
+            equalized_hist = cv2.equalizeHist(gray)
+            gray = cv2.filter2D(src=equalized_hist, ddepth=-1, kernel=sharpen)
         kp1, des1 = orb.detectAndCompute(gray, None)
         n_features = len(kp1)
         if len(kp2) != 0:
             ft_dst = np.zeros(frame.shape, dtype="uint8") if background else gray.copy()
-            matches = bf.match(des1, des2)
-            good = []
-            for match in matches:
-                if match.distance < limit(match_thresh, 0, 1)*50:
-                    good.append(match)
+            good = feature_matcher(des1, des2, match_thresh=match_thresh)
 
             ft_dst = drawMatchDisplacement(ft_dst, kp1, (0, 0, 255), kp2, (255, 0, 0), good, moving_only, 2, position)
             center = position+np.array([w/2, h/2])
             cv2.circle(ft_dst, center.astype(int), 2, (255, 0, 0), -1)
             img3 = cv2.drawMatches(frame, kp1, prev_frame, kp2, good, None, flags=2)
-
             cv2.imshow("frame", frame)
             ft_dst = cv2.putText(ft_dst, f"FPS: {fps:.2f} - PPP: {preprocessing} - All Features: {not moving_only} - N fts: {n_features}", (20, 20), cv2.FONT_HERSHEY_SIMPLEX, fontScale=.6, color=(255, 0, 255), thickness=2, lineType=cv2.LINE_AA)
             cv2.imshow("Feature Displacement", ft_dst)
