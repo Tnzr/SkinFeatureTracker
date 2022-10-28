@@ -1,7 +1,7 @@
 import time
 import cv2
 import numpy as np
-from Preprocessing.UsedPipeline.Pipeline import Preprocessing
+from Preprocessing.UsedPipeline.TextureEnhancer import TextureEnhancer
 from SemanticSegmentation.segmentation import SemanticSegmentation
 
 def drawMatchDisplacement(dst, kp1, cl1, kp2, cl2, good, moving_matches=True, mov_thresh=2, pos_log=None):
@@ -59,9 +59,9 @@ def feature_matcher(des1, des2, match_thresh):
 
 if __name__ == '__main__':
     print("Initializing...")
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     skin_extractor = SemanticSegmentation(model="SemanticSegmentation/pretrained/model_segmentation_skin_30.pth")
-    texture_enhancer = Preprocessing()
+    texture_enhancer = TextureEnhancer()
     roi = []
     orb = cv2.ORB_create()
     index_params = dict(algorithm=0, trees=5)
