@@ -26,9 +26,6 @@ while True:
     if results.multi_face_landmarks:
         for face_lm in results.multi_face_landmarks:
             img = blank_img
-            print(inspect.getmembers(face_lm, lambda a:not(inspect.isroutine(a))))
-            
-
             mpdraw.draw_landmarks(img, face_lm,
                                   mpfacemesh.FACEMESH_TESSELATION,
                                   drawspec1, drawspec2)

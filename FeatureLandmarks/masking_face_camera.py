@@ -19,6 +19,7 @@ predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 # read the image
 cap = cv2.VideoCapture(0)
 
+
 def getMask(size, lips):
     # Find Convex hull of all points
     hullIndex = cv2.convexHull(np.array(lips), returnPoints=False)
@@ -30,18 +31,20 @@ def getMask(size, lips):
     mask = np.zeros((size[0], size[1], 3), dtype=np.uint8)
     cv2.fillConvexPoly(mask, np.int32(hullInt), (255, 255, 255))
     return mask
-n = 0
+
+
 while True:
     start_time = time.time() # start time of the loop
 
     _, frame = cap.read()
     # Convert image into grayscale
     gray = cv2.cvtColor(src=frame, code=cv2.COLOR_BGR2GRAY)
-    im = frame
+    im = frame.copy()
 
     # Use detector to find landmarks
     imDlib = cv2.cvtColor(gray, cv2.COLOR_BGR2RGB)
     points = face.getLandmarks(detector, predictor, imDlib)
+    cv2.imshow("FRAME", frame)
 
     if not points:
         continue
@@ -60,11 +63,10 @@ while True:
     right_eye_mask = getMask(im.shape, righteye)
     mouth_mask = getMask(im.shape, mouth)
 
-
     new_mask = mask - mouth_mask - right_eye_mask - left_eye_mask
-    cv2.imshow("", new_mask)
-
-    print("FPS: ", 1.0 / (time.time() - start_time)) # FPS = 1 / time to process loop
+    cv2.imshow("FACE MASK", new_mask)
+    fps = (time.time() - start_time)**-1
+    print("FPS: ", fps) # FPS = 1 / time to process loop
     k = cv2.waitKey(5) & 0xFF
     if k == 27:
         break
