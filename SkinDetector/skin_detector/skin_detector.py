@@ -6,7 +6,7 @@ import logging
 import cv2
 import numpy
 
-from . import scripts
+import scripts
 
 logger = logging.getLogger('main')
 
@@ -31,7 +31,7 @@ def get_hsv_mask(img, debug=False):
     return msk_hsv.astype(float)
 
 
-def get_rgb_mask(img, debug=False):
+def get_rgb_mask(img, min = [45, 52, 108], max = [255, 255, 255], debug=False):
     assert isinstance(img, numpy.ndarray), 'image must be a numpy array'
     assert img.ndim == 3, 'skin detection can only work on color images'
     logger.debug('getting rgb mask')
@@ -147,3 +147,25 @@ def process(img, thresh=0.5, debug=False):
     mask = grab_cut_mask(img, mask, debug=debug)
 
     return mask
+
+if __name__ == '__main__':
+    cv2.namedWindow("my_img")
+    cap = cv2.VideoCapture(0)
+    _, frame = cap.read()
+    r = frame
+
+    r = cv2.selectROI("my_img", frame)
+    # Crop image
+    cropped_image = frame[int(r[1]):int(r[1] + r[3]),
+                    int(r[0]):int(r[0] + r[2])]
+    min_color_per_row = numpy.min(cropped_image, axis=0)
+    min_color = numpy.min(min_color_per_row, axis=0)
+    max_color_per_row = numpy.max(cropped_image, axis=0)
+    max_color = numpy.max(min_color_per_row, axis=0)
+
+    # Display cropped image
+    cv2.imshow("Cropped image", cropped_image)
+    cv2.imshow("Mask image", get_rgb_mask(frame, list(min_color), list(max_color)))
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    cap.release()

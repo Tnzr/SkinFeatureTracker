@@ -59,7 +59,7 @@ def feature_matcher(des1, des2, match_thresh):
 
 if __name__ == '__main__':
     print("Initializing...")
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     skin_extractor = SemanticSegmentation(model="SemanticSegmentation/pretrained/model_segmentation_skin_30.pth")
     texture_enhancer = Preprocessing()
     roi = []
