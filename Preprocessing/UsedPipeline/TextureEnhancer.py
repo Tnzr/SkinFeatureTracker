@@ -10,7 +10,7 @@ class TextureEnhancer:
     INTERPOLATION_SHARP = 13
 
     def __init__(self, sharpening_ksize=3):
-        self.shapening_ksize = sharpening_ksize
+        self.sharpening_ksize = sharpening_ksize
 
     @staticmethod
     def gen_sharp_kernel(k_size: int = 3):
@@ -33,16 +33,20 @@ class TextureEnhancer:
 
     def histogram_eq(self, img):
         color = len(img.shape) == 3
+
         if color:
             out = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         out = cv2.equalizeHist(out if color else img)
+
         return out
 
     def brighten(self, img, value=30):
         h, s, v = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
+
         lim = 255 - value
         v[v > lim] = 255
         v[v <= lim] += value
+
         return cv2.cvtColor(cv2.merge((h, s, v)), cv2.COLOR_HSV2BGR)
 
     @staticmethod
@@ -77,7 +81,7 @@ class TextureEnhancer:
             out = self.histogram_eq(img)
 
         if interpolation == self.INTERPOLATION_SHARP:
-            out = self.sharpen(out, self.shapening_ksize)
+            out = self.sharpen(out, self.sharpening_ksize)
 
         return out
 
@@ -86,9 +90,14 @@ if __name__ == '__main__':
     PreProcClass = TextureEnhancer()
     image = cv2.imread('9.png')
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    out3 = PreProcClass.run(gray)
-    PreProcClass.shapening_ksize = 5
-    out5 = PreProcClass.run(gray, enhancer=TextureEnhancer.ENHANCER_CLASHE, interpolation=TextureEnhancer.INTERPOLATION_SHARP)
-    concat = np.concatenate((gray, out3, out5), axis=1)
-    cv2.imshow("Texture Enhancement", concat)
-    cv2.waitKey(0)
+
+    cv2.imwrite('pipeline_run.png', PreProcClass.run(gray))
+    cv2.imwrite('hist.png', PreProcClass.histogram_eq(image))
+    cv2.imwrite('sharp.png', PreProcClass.sharpen(image))
+    cv2.imwrite('sharp_custom_7.png', PreProcClass.sharpen(image, 7))
+    cv2.imwrite('brighten.png', PreProcClass.brighten(image))
+    cv2.imwrite('brighten_100.png', PreProcClass.brighten(image, 100))
+    cv2.imwrite('clashe.png', PreProcClass.clashe(image))
+    cv2.imwrite('clashe_custom.png', PreProcClass.clashe(image, 4.0, (16, 16)))
+    cv2.imwrite('bilateral.png', PreProcClass.bilateral(image))
+    cv2.imwrite('bilateral_75.png', PreProcClass.bilateral(image, 75, 75))
