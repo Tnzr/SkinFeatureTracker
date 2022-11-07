@@ -39,7 +39,7 @@
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
-  <component name="RunManager" selected="Python.medipipe_landmarks_test">
+  <component name="RunManager" selected="Python.medipipe_landmarks_displacementfield">
     <configuration name="Unnamed" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="SkinFeatureTracker" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -145,7 +145,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="medipipe_landmarks_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="medipipe_landmarks_displacementfield" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SkinFeatureTracker" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -157,7 +157,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/FeatureLandmarks/medipipe_landmarks_test.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\benja\Documents\GitHub\SkinFeatureTracker\FeatureLandmarks\medipipe_landmarks_displacementfield.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -170,13 +170,13 @@
       <item itemvalue="Python.Unnamed" />
       <item itemvalue="Python.featureDetect" />
       <item itemvalue="Python.mediapipeimagereturn" />
-      <item itemvalue="Python.medipipe_landmarks_test" />
       <item itemvalue="Python.mediapipe_mask" />
       <item itemvalue="Python.masking_face_camera" />
+      <item itemvalue="Python.medipipe_landmarks_displacementfield" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.medipipe_landmarks_test" />
+        <item itemvalue="Python.medipipe_landmarks_displacementfield" />
         <item itemvalue="Python.mediapipe_mask" />
         <item itemvalue="Python.featureDetect" />
         <item itemvalue="Python.mediapipeimagereturn" />
