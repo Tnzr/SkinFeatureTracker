@@ -44,7 +44,6 @@ while True:
     # Use detector to find landmarks
     imDlib = cv2.cvtColor(gray, cv2.COLOR_BGR2RGB)
     points = face.getLandmarks(detector, predictor, imDlib)
-    cv2.imshow("FRAME", frame)
 
     if not points:
         continue

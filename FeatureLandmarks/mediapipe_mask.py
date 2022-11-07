@@ -23,12 +23,26 @@ while True:
     blank_img = np.zeros((h, w, c), np.uint8)
     results = FaceMesh.process(img)
 
+    x = []
+    y = []
+
+
     if results.multi_face_landmarks:
         for face_lm in results.multi_face_landmarks:
             img = blank_img
             mpdraw.draw_landmarks(img, face_lm,
                                   mpfacemesh.FACEMESH_TESSELATION,
                                   drawspec1, drawspec2)
+
+
+    if results.multi_face_landmarks:
+        landmarks = results.multi_face_landmarks.landmark
+        print(landmarks)
+
+
+
+
+
 
     print("FPS: ", 1.0 / (time.time() - start_time)) # FPS = 1 / time to process loop
 

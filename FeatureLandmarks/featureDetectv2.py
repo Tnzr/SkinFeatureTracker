@@ -32,6 +32,9 @@ while True:
         for (x, y) in shape:
             cv2.circle(image, (x, y), 2, (0, 255, 0), -1)
 
+
+
+
     # show the output image with the face detections + facial landmarks
     cv2.imshow("Output", image)
     k = cv2.waitKey(5) & 0xFF
